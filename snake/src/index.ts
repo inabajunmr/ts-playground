@@ -2,21 +2,25 @@ class Game {
     private key: Direction;
     private maxX: number;
     private maxY: number;
-    private cells: Array<Array<boolean>>;
+    private cells: Array<Array<Cell>>;
 
     constructor(maxX: number, maxY: number) {
         this.maxX = maxX;
         this.maxY = maxY;
-        this.cells = new Array<Array<boolean>>(maxX);
+        this.cells = new Array<Array<Cell>>(maxX);
         this.cells[0] = new Array();
         for (let index = 0; index < this.cells.length; index++) {
-            this.cells[index] = new Array(maxY).fill(false);
+            this.cells[index] = new Array(maxY).fill(new Cell('off'));
         }
         this.key = 'up';
     }
 
     async flip() {
-        this.cells[0][0] = !this.cells[0][0];
+        if (this.cells[0][0].getType() == 'on') {
+            this.cells[0][0] = new Cell('off');
+        } else {
+            this.cells[0][0] = new Cell('on');
+        }
     }
 
     async sleep(ms: number) {
@@ -36,11 +40,7 @@ class Game {
         let html = '';
         this.cells.forEach((x) => {
             x.forEach((y) => {
-                if (y) {
-                    html += '■';
-                } else {
-                    html += '□';
-                }
+                html += y.toString();
             });
             html += '<br>';
         });
@@ -72,7 +72,30 @@ class Game {
 
 type Direction = 'up' | 'down' | 'left' | 'right';
 
-const g = new Game(20, 20);
+class Cell {
+    private type: CellType;
+    constructor(type: CellType) {
+        this.type = type;
+    }
+
+    getType() {
+        return this.type;
+    }
+
+    toString() {
+        switch (this.type) {
+            case 'on':
+                return '■';
+            case 'off':
+                return '□';
+            default:
+                return '□';
+        }
+    }
+}
+type CellType = 'on' | 'off';
+
+const g = new Game(25, 25);
 g.start();
 
 document.addEventListener('keydown', (e) => {

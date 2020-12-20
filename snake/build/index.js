@@ -42,14 +42,19 @@ var Game = /** @class */ (function () {
         this.cells = new Array(maxX);
         this.cells[0] = new Array();
         for (var index = 0; index < this.cells.length; index++) {
-            this.cells[index] = new Array(maxY).fill(false);
+            this.cells[index] = new Array(maxY).fill(new Cell('off'));
         }
         this.key = 'up';
     }
     Game.prototype.flip = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                this.cells[0][0] = !this.cells[0][0];
+                if (this.cells[0][0].getType() == 'on') {
+                    this.cells[0][0] = new Cell('off');
+                }
+                else {
+                    this.cells[0][0] = new Cell('on');
+                }
                 return [2 /*return*/];
             });
         });
@@ -90,12 +95,7 @@ var Game = /** @class */ (function () {
                 html = '';
                 this.cells.forEach(function (x) {
                     x.forEach(function (y) {
-                        if (y) {
-                            html += '■';
-                        }
-                        else {
-                            html += '□';
-                        }
+                        html += y.toString();
                     });
                     html += '<br>';
                 });
@@ -126,7 +126,26 @@ var Game = /** @class */ (function () {
     };
     return Game;
 }());
-var g = new Game(20, 20);
+var Cell = /** @class */ (function () {
+    function Cell(type) {
+        this.type = type;
+    }
+    Cell.prototype.getType = function () {
+        return this.type;
+    };
+    Cell.prototype.toString = function () {
+        switch (this.type) {
+            case 'on':
+                return '■';
+            case 'off':
+                return '□';
+            default:
+                return '□';
+        }
+    };
+    return Cell;
+}());
+var g = new Game(25, 25);
 g.start();
 document.addEventListener('keydown', function (e) {
     g.setDirection(e.key);
