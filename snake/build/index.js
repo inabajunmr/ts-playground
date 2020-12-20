@@ -44,8 +44,9 @@ var Game = /** @class */ (function () {
         for (var index = 0; index < this.cells.length; index++) {
             this.cells[index] = new Array(maxY).fill(false);
         }
+        this.key = 'up';
     }
-    Game.prototype.frip = function () {
+    Game.prototype.flip = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 this.cells[0][0] = !this.cells[0][0];
@@ -69,7 +70,7 @@ var Game = /** @class */ (function () {
                         return [4 /*yield*/, this.sleep(100)];
                     case 1:
                         _a.sent();
-                        return [4 /*yield*/, this.frip()];
+                        return [4 /*yield*/, this.flip()];
                     case 2:
                         _a.sent();
                         return [4 /*yield*/, this.print()];
@@ -83,9 +84,9 @@ var Game = /** @class */ (function () {
     };
     Game.prototype.print = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var a, html;
+            var game, html, key;
             return __generator(this, function (_a) {
-                a = document.getElementById('game');
+                game = document.getElementById('game');
                 html = '';
                 this.cells.forEach(function (x) {
                     x.forEach(function (y) {
@@ -98,11 +99,35 @@ var Game = /** @class */ (function () {
                     });
                     html += '<br>';
                 });
-                a.innerHTML = html;
+                game.innerHTML = html;
+                key = document.getElementById('key');
+                key.innerHTML = this.key;
                 return [2 /*return*/];
             });
         });
     };
+    Game.prototype.setDirection = function (key) {
+        switch (key) {
+            case 'ArrowUp':
+                this.key = 'up';
+                break;
+            case 'ArrowDown':
+                this.key = 'down';
+                break;
+            case 'ArrowLeft':
+                this.key = 'left';
+                break;
+            case 'ArrowRight':
+                this.key = 'right';
+                break;
+            default:
+                break;
+        }
+    };
     return Game;
 }());
-new Game(20, 20).start();
+var g = new Game(20, 20);
+g.start();
+document.addEventListener('keydown', function (e) {
+    g.setDirection(e.key);
+});

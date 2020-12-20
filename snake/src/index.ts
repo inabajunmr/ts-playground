@@ -1,4 +1,5 @@
 class Game {
+    private key: Direction;
     private maxX: number;
     private maxY: number;
     private cells: Array<Array<boolean>>;
@@ -11,6 +12,7 @@ class Game {
         for (let index = 0; index < this.cells.length; index++) {
             this.cells[index] = new Array(maxY).fill(false);
         }
+        this.key = 'up';
     }
 
     async flip() {
@@ -30,7 +32,7 @@ class Game {
     }
 
     async print() {
-        const a = document.getElementById('game');
+        const game = document.getElementById('game');
         let html = '';
         this.cells.forEach((x) => {
             x.forEach((y) => {
@@ -42,8 +44,37 @@ class Game {
             });
             html += '<br>';
         });
-        a!.innerHTML = html;
+        game!.innerHTML = html;
+
+        const key = document.getElementById('key');
+        key!.innerHTML = this.key;
+    }
+
+    setDirection(key: string) {
+        switch (key) {
+            case 'ArrowUp':
+                this.key = 'up';
+                break;
+            case 'ArrowDown':
+                this.key = 'down';
+                break;
+            case 'ArrowLeft':
+                this.key = 'left';
+                break;
+            case 'ArrowRight':
+                this.key = 'right';
+                break;
+            default:
+                break;
+        }
     }
 }
 
-new Game(20, 20).start();
+type Direction = 'up' | 'down' | 'left' | 'right';
+
+const g = new Game(20, 20);
+g.start();
+
+document.addEventListener('keydown', (e) => {
+    g.setDirection(e.key);
+});
