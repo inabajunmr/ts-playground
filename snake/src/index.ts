@@ -1,7 +1,11 @@
+type GameStatus = 'start' | 'stop';
 class Game {
     private key: Direction;
     private maxX: number;
     private maxY: number;
+    private nowX: number = 5;
+    private nowY: number = 5;
+    private status: GameStatus = 'start';
     private cells: Array<Array<Cell>>;
 
     constructor(maxX: number, maxY: number) {
@@ -12,14 +16,54 @@ class Game {
         for (let index = 0; index < this.cells.length; index++) {
             this.cells[index] = new Array(maxY).fill(new Cell('off'));
         }
+        this.cells[this.nowY][this.nowX] = new Cell('on');
         this.key = 'up';
     }
 
-    async flip() {
-        if (this.cells[0][0].getType() == 'on') {
-            this.cells[0][0] = new Cell('off');
-        } else {
-            this.cells[0][0] = new Cell('on');
+    async locate() {
+        if (this.status === 'stop') {
+            return;
+        }
+
+        switch (this.key) {
+            case 'up':
+                if (this.nowY === 0) {
+                    this.status = 'stop';
+                    return;
+                }
+                this.cells[this.nowY][this.nowX] = new Cell('off');
+                this.nowY -= 1;
+                this.cells[this.nowY][this.nowX] = new Cell('on');
+                return;
+            case 'down':
+                if (this.nowY === this.maxY - 1) {
+                    this.status = 'stop';
+                    return;
+                }
+                this.cells[this.nowY][this.nowX] = new Cell('off');
+                this.nowY += 1;
+                this.cells[this.nowY][this.nowX] = new Cell('on');
+                return;
+            case 'left':
+                if (this.nowX === 0) {
+                    this.status = 'stop';
+                    return;
+                }
+                this.cells[this.nowY][this.nowX] = new Cell('off');
+                this.nowX -= 1;
+                this.cells[this.nowY][this.nowX] = new Cell('on');
+                return;
+            case 'right':
+                if (this.nowX === this.maxX - 1) {
+                    this.status = 'stop';
+                    return;
+                }
+                this.cells[this.nowY][this.nowX] = new Cell('off');
+                this.nowX += 1;
+                this.cells[this.nowY][this.nowX] = new Cell('on');
+                break;
+            default:
+                break;
         }
     }
 
@@ -30,7 +74,7 @@ class Game {
     async start() {
         while (true) {
             await this.sleep(100);
-            await this.flip();
+            await this.locate();
             await this.print();
         }
     }
@@ -48,6 +92,9 @@ class Game {
 
         const key = document.getElementById('key');
         key!.innerHTML = this.key;
+
+        const status = document.getElementById('status');
+        status!.innerHTML = this.status;
     }
 
     setDirection(key: string) {
