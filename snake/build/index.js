@@ -36,25 +36,82 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var Game = /** @class */ (function () {
-    function Game(maxX, maxY) {
-        this.maxX = maxX;
-        this.maxY = maxY;
-        this.cells = new Array(maxX);
+    function Game(cellNumX, cellNumY) {
+        this.nowX = 15;
+        this.nowY = 15;
+        this.score = 0;
+        this.status = 'start';
+        this.maxX = cellNumX - 1;
+        this.maxY = cellNumY - 1;
+        this.cells = new Array(cellNumX);
         this.cells[0] = new Array();
         for (var index = 0; index < this.cells.length; index++) {
-            this.cells[index] = new Array(maxY).fill(new Cell('off'));
+            this.cells[index] = new Array(cellNumY).fill(Cell.OFF);
         }
+        this.cells[this.nowY][this.nowX] = new Cell('on', 1);
         this.key = 'up';
     }
-    Game.prototype.flip = function () {
+    Game.prototype.snakeLength = function () {
+        if (this.score == 0) {
+            return 1;
+        }
+        return this.score + 1 * Game.SNAKE_LENGTH_COEFFICIENT;
+    };
+    Game.prototype.locate = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                if (this.cells[0][0].getType() == 'on') {
-                    this.cells[0][0] = new Cell('off');
+                if (this.status === 'stop') {
+                    return [2 /*return*/];
                 }
-                else {
-                    this.cells[0][0] = new Cell('on');
+                switch (this.key) {
+                    case 'up':
+                        if (this.nowY === 0) {
+                            this.status = 'stop';
+                            return [2 /*return*/];
+                        }
+                        this.nowY -= 1;
+                        this.cells[this.nowY][this.nowX] = new Cell('on', this.snakeLength());
+                        return [2 /*return*/];
+                    case 'down':
+                        if (this.nowY === this.maxY) {
+                            this.status = 'stop';
+                            return [2 /*return*/];
+                        }
+                        this.nowY += 1;
+                        this.cells[this.nowY][this.nowX] = new Cell('on', this.snakeLength());
+                        return [2 /*return*/];
+                    case 'left':
+                        if (this.nowX === 0) {
+                            this.status = 'stop';
+                            return [2 /*return*/];
+                        }
+                        this.nowX -= 1;
+                        this.cells[this.nowY][this.nowX] = new Cell('on', this.snakeLength());
+                        return [2 /*return*/];
+                    case 'right':
+                        if (this.nowX === this.maxX) {
+                            this.status = 'stop';
+                            return [2 /*return*/];
+                        }
+                        this.nowX += 1;
+                        this.cells[this.nowY][this.nowX] = new Cell('on', this.snakeLength());
+                        break;
+                    default:
+                        break;
                 }
+                return [2 /*return*/];
+            });
+        });
+    };
+    Game.prototype.elapse = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                // TODO cache cells
+                this.cells.forEach(function (y) {
+                    y.forEach(function (x) {
+                        x.elapse();
+                    });
+                });
                 return [2 /*return*/];
             });
         });
@@ -71,25 +128,28 @@ var Game = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!true) return [3 /*break*/, 4];
+                        if (!true) return [3 /*break*/, 5];
                         return [4 /*yield*/, this.sleep(100)];
                     case 1:
                         _a.sent();
-                        return [4 /*yield*/, this.flip()];
+                        return [4 /*yield*/, this.elapse()];
                     case 2:
                         _a.sent();
-                        return [4 /*yield*/, this.print()];
+                        return [4 /*yield*/, this.locate()];
                     case 3:
                         _a.sent();
+                        return [4 /*yield*/, this.print()];
+                    case 4:
+                        _a.sent();
                         return [3 /*break*/, 0];
-                    case 4: return [2 /*return*/];
+                    case 5: return [2 /*return*/];
                 }
             });
         });
     };
     Game.prototype.print = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var game, html, key;
+            var game, html, key, status;
             return __generator(this, function (_a) {
                 game = document.getElementById('game');
                 html = '';
@@ -102,6 +162,8 @@ var Game = /** @class */ (function () {
                 game.innerHTML = html;
                 key = document.getElementById('key');
                 key.innerHTML = this.key;
+                status = document.getElementById('status');
+                status.innerHTML = this.status;
                 return [2 /*return*/];
             });
         });
@@ -124,12 +186,22 @@ var Game = /** @class */ (function () {
                 break;
         }
     };
+    Game.SNAKE_LENGTH_COEFFICIENT = 3;
     return Game;
 }());
 var Cell = /** @class */ (function () {
-    function Cell(type) {
+    function Cell(type, life) {
         this.type = type;
+        this.life = life;
     }
+    Cell.prototype.elapse = function () {
+        if (this.type == 'on') {
+            this.life -= 1;
+        }
+        if (this.life == 0) {
+            this.type = 'off';
+        }
+    };
     Cell.prototype.getType = function () {
         return this.type;
     };
@@ -143,6 +215,7 @@ var Cell = /** @class */ (function () {
                 return '□';
         }
     };
+    Cell.OFF = new Cell('off', 0);
     return Cell;
 }());
 var g = new Game(25, 25);
