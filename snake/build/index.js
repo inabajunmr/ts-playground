@@ -35,12 +35,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var _a;
 var Game = /** @class */ (function () {
     function Game(cellNumX, cellNumY) {
         this.nowX = 15;
         this.nowY = 15;
         this.score = 0;
-        this.status = 'start';
+        this.status = 'init';
         this.maxX = cellNumX - 1;
         this.maxY = cellNumY - 1;
         this.cells = new Array(cellNumX);
@@ -55,7 +56,7 @@ var Game = /** @class */ (function () {
         if (this.score === 0) {
             return 1;
         }
-        return this.score + 1 * Game.SNAKE_LENGTH_COEFFICIENT;
+        return (this.score + 1) * Game.SNAKE_LENGTH_COEFFICIENT;
     };
     Game.prototype.newTreasure = function () {
         while (true) {
@@ -67,52 +68,61 @@ var Game = /** @class */ (function () {
             }
         }
     };
+    Game.prototype.bumpObject = function () {
+        // bump into treasure
+        if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
+            this.newTreasure();
+            this.score += 1;
+        }
+        // bump into snake
+        if (this.cells[this.nowY][this.nowX].getType() === 'snake') {
+            this.status = 'gameover';
+        }
+    };
+    Game.prototype.bumpWall = function (d) {
+        if (d === 'up' && this.nowY === 0) {
+            this.status = 'gameover';
+            return;
+        }
+        if (d === 'down' && this.nowY === this.maxY) {
+            this.status = 'gameover';
+            return;
+        }
+        if (d === 'left' && this.nowX === 0) {
+            this.status = 'gameover';
+            return;
+        }
+        if (d === 'right' && this.nowX === this.maxX) {
+            this.status = 'gameover';
+            return;
+        }
+    };
     Game.prototype.locate = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (this.key) {
                     case 'up':
-                        if (this.nowY === 0) {
-                            this.status = 'stop';
-                            return [2 /*return*/];
-                        }
+                        this.bumpWall('up');
                         this.nowY -= 1;
-                        if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
-                            this.newTreasure();
-                        }
+                        this.bumpObject();
                         this.cells[this.nowY][this.nowX] = new Cell('snake', this.snakeLength());
                         return [2 /*return*/];
                     case 'down':
-                        if (this.nowY === this.maxY) {
-                            this.status = 'stop';
-                            return [2 /*return*/];
-                        }
+                        this.bumpWall('down');
                         this.nowY += 1;
-                        if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
-                            this.newTreasure();
-                        }
+                        this.bumpObject();
                         this.cells[this.nowY][this.nowX] = new Cell('snake', this.snakeLength());
                         return [2 /*return*/];
                     case 'left':
-                        if (this.nowX === 0) {
-                            this.status = 'stop';
-                            return [2 /*return*/];
-                        }
+                        this.bumpWall('left');
                         this.nowX -= 1;
-                        if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
-                            this.newTreasure();
-                        }
+                        this.bumpObject();
                         this.cells[this.nowY][this.nowX] = new Cell('snake', this.snakeLength());
                         return [2 /*return*/];
                     case 'right':
-                        if (this.nowX === this.maxX) {
-                            this.status = 'stop';
-                            return [2 /*return*/];
-                        }
+                        this.bumpWall('right');
                         this.nowX += 1;
-                        if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
-                            this.newTreasure();
-                        }
+                        this.bumpObject();
                         this.cells[this.nowY][this.nowX] = new Cell('snake', this.snakeLength());
                         break;
                     default:
@@ -147,34 +157,35 @@ var Game = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.newTreasure();
-                        _a.label = 1;
-                    case 1:
-                        if (!true) return [3 /*break*/, 6];
-                        if (this.status === 'stop') {
-                            return [3 /*break*/, 6];
+                        if (!true) return [3 /*break*/, 5];
+                        if (this.status === 'gameover') {
+                            return [3 /*break*/, 5];
                         }
-                        return [4 /*yield*/, this.sleep(100)];
-                    case 2:
+                        return [4 /*yield*/, this.sleep(70)];
+                    case 1:
                         _a.sent();
                         return [4 /*yield*/, this.elapse()];
-                    case 3:
+                    case 2:
                         _a.sent();
                         return [4 /*yield*/, this.locate()];
-                    case 4:
+                    case 3:
                         _a.sent();
                         return [4 /*yield*/, this.print()];
-                    case 5:
+                    case 4:
                         _a.sent();
-                        return [3 /*break*/, 1];
-                    case 6: return [2 /*return*/];
+                        return [3 /*break*/, 0];
+                    case 5: return [2 /*return*/];
                 }
             });
         });
     };
+    Game.prototype.startStatus = function () {
+        // TODO if status change at start(), compile failed
+        this.status = 'start';
+    };
     Game.prototype.print = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var game, html, key, status;
+            var game, html, score;
             return __generator(this, function (_a) {
                 game = document.getElementById('game');
                 html = '';
@@ -185,15 +196,14 @@ var Game = /** @class */ (function () {
                     html += '<br>';
                 });
                 game.innerHTML = html;
-                key = document.getElementById('key');
-                key.innerHTML = this.key;
-                status = document.getElementById('status');
-                status.innerHTML = this.status;
+                score = document.getElementById('score');
+                score.innerHTML = String(this.score);
                 return [2 /*return*/];
             });
         });
     };
     Game.prototype.setDirection = function (key) {
+        this.status = 'start';
         switch (key) {
             case 'ArrowUp':
                 this.key = 'up';
@@ -211,7 +221,10 @@ var Game = /** @class */ (function () {
                 break;
         }
     };
-    Game.SNAKE_LENGTH_COEFFICIENT = 3;
+    Game.prototype.getStatus = function () {
+        return this.status;
+    };
+    Game.SNAKE_LENGTH_COEFFICIENT = 5;
     return Game;
 }());
 var Cell = /** @class */ (function () {
@@ -246,8 +259,15 @@ var Cell = /** @class */ (function () {
     Cell.TREASURE = new Cell('treasure', -1);
     return Cell;
 }());
-var g = new Game(25, 25);
-g.start();
-document.addEventListener('keydown', function (e) {
-    g.setDirection(e.key);
+(_a = document.getElementById('start')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function (e) {
+    var g = new Game(25, 25);
+    g.newTreasure();
+    g.print();
+    document.addEventListener('keydown', function (e) {
+        if (g.getStatus() == 'init') {
+            g.startStatus();
+            g.start();
+        }
+        g.setDirection(e.key);
+    });
 });

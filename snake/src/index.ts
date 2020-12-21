@@ -1,4 +1,4 @@
-type GameStatus = 'start' | 'stop';
+type GameStatus = 'init' | 'start' | 'gameover';
 class Game {
     private key: Direction;
     private maxX: number;
@@ -6,8 +6,8 @@ class Game {
     private nowX: number = 15;
     private nowY: number = 15;
     private score: number = 0;
-    private static SNAKE_LENGTH_COEFFICIENT = 3;
-    private status: GameStatus = 'start';
+    private static SNAKE_LENGTH_COEFFICIENT = 5;
+    private status: GameStatus = 'init';
     private cells: Array<Array<Cell>>;
 
     constructor(cellNumX: number, cellNumY: number) {
@@ -22,11 +22,11 @@ class Game {
         this.key = 'up';
     }
 
-    snakeLength(): number {
+    private snakeLength(): number {
         if (this.score === 0) {
             return 1;
         }
-        return this.score + 1 * Game.SNAKE_LENGTH_COEFFICIENT;
+        return (this.score + 1) * Game.SNAKE_LENGTH_COEFFICIENT;
     }
 
     newTreasure() {
@@ -40,59 +40,71 @@ class Game {
         }
     }
 
-    async locate() {
+    private bumpObject() {
+        // bump into treasure
+        if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
+            this.newTreasure();
+            this.score += 1;
+        }
+
+        // bump into snake
+        if (this.cells[this.nowY][this.nowX].getType() === 'snake') {
+            this.status = 'gameover';
+        }
+    }
+
+    private bumpWall(d: Direction) {
+        if (d === 'up' && this.nowY === 0) {
+            this.status = 'gameover';
+            return;
+        }
+        if (d === 'down' && this.nowY === this.maxY) {
+            this.status = 'gameover';
+            return;
+        }
+        if (d === 'left' && this.nowX === 0) {
+            this.status = 'gameover';
+            return;
+        }
+        if (d === 'right' && this.nowX === this.maxX) {
+            this.status = 'gameover';
+            return;
+        }
+    }
+
+    private async locate() {
         switch (this.key) {
             case 'up':
-                if (this.nowY === 0) {
-                    this.status = 'stop';
-                    return;
-                }
+                this.bumpWall('up');
                 this.nowY -= 1;
-                if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
-                    this.newTreasure();
-                }
+                this.bumpObject();
                 this.cells[this.nowY][this.nowX] = new Cell(
                     'snake',
                     this.snakeLength()
                 );
                 return;
             case 'down':
-                if (this.nowY === this.maxY) {
-                    this.status = 'stop';
-                    return;
-                }
+                this.bumpWall('down');
                 this.nowY += 1;
-                if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
-                    this.newTreasure();
-                }
+                this.bumpObject();
                 this.cells[this.nowY][this.nowX] = new Cell(
                     'snake',
                     this.snakeLength()
                 );
                 return;
             case 'left':
-                if (this.nowX === 0) {
-                    this.status = 'stop';
-                    return;
-                }
+                this.bumpWall('left');
                 this.nowX -= 1;
-                if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
-                    this.newTreasure();
-                }
+                this.bumpObject();
                 this.cells[this.nowY][this.nowX] = new Cell(
                     'snake',
                     this.snakeLength()
                 );
                 return;
             case 'right':
-                if (this.nowX === this.maxX) {
-                    this.status = 'stop';
-                    return;
-                }
+                this.bumpWall('right');
                 this.nowX += 1;
-                if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
-                    this.newTreasure();
-                }
+                this.bumpObject();
                 this.cells[this.nowY][this.nowX] = new Cell(
                     'snake',
                     this.snakeLength()
@@ -103,7 +115,7 @@ class Game {
         }
     }
 
-    async elapse() {
+    private async elapse() {
         // TODO cache cells
         this.cells.forEach((y) => {
             y.forEach((x) => {
@@ -112,22 +124,26 @@ class Game {
         });
     }
 
-    async sleep(ms: number) {
+    private async sleep(ms: number) {
         return new Promise((r) => setTimeout(r, ms));
     }
 
     async start() {
-        this.newTreasure();
         while (true) {
-            if (this.status === 'stop') {
+            if (this.status === 'gameover') {
                 break;
             }
 
-            await this.sleep(100);
+            await this.sleep(70);
             await this.elapse();
             await this.locate();
             await this.print();
         }
+    }
+
+    startStatus() {
+        // TODO if status change at start(), compile failed
+        this.status = 'start';
     }
 
     async print() {
@@ -141,14 +157,12 @@ class Game {
         });
         game!.innerHTML = html;
 
-        const key = document.getElementById('key');
-        key!.innerHTML = this.key;
-
-        const status = document.getElementById('status');
-        status!.innerHTML = this.status;
+        const score = document.getElementById('score');
+        score!.innerHTML = String(this.score);
     }
 
     setDirection(key: string) {
+        this.status = 'start';
         switch (key) {
             case 'ArrowUp':
                 this.key = 'up';
@@ -165,6 +179,10 @@ class Game {
             default:
                 break;
         }
+    }
+
+    getStatus() {
+        return this.status;
     }
 }
 
@@ -210,9 +228,15 @@ class Cell {
     }
 }
 
-const g = new Game(25, 25);
-g.start();
-
-document.addEventListener('keydown', (e) => {
-    g.setDirection(e.key);
+document.getElementById('start')?.addEventListener('click', (e) => {
+    const g = new Game(25, 25);
+    g.newTreasure();
+    g.print();
+    document.addEventListener('keydown', (e) => {
+        if (g.getStatus() == 'init') {
+            g.startStatus();
+            g.start();
+        }
+        g.setDirection(e.key);
+    });
 });
