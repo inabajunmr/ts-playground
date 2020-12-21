@@ -70,9 +70,6 @@ var Game = /** @class */ (function () {
     Game.prototype.locate = function () {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                if (this.status === 'stop') {
-                    return [2 /*return*/];
-                }
                 switch (this.key) {
                     case 'up':
                         if (this.nowY === 0) {
@@ -80,6 +77,9 @@ var Game = /** @class */ (function () {
                             return [2 /*return*/];
                         }
                         this.nowY -= 1;
+                        if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
+                            this.newTreasure();
+                        }
                         this.cells[this.nowY][this.nowX] = new Cell('snake', this.snakeLength());
                         return [2 /*return*/];
                     case 'down':
@@ -88,6 +88,9 @@ var Game = /** @class */ (function () {
                             return [2 /*return*/];
                         }
                         this.nowY += 1;
+                        if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
+                            this.newTreasure();
+                        }
                         this.cells[this.nowY][this.nowX] = new Cell('snake', this.snakeLength());
                         return [2 /*return*/];
                     case 'left':
@@ -96,6 +99,9 @@ var Game = /** @class */ (function () {
                             return [2 /*return*/];
                         }
                         this.nowX -= 1;
+                        if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
+                            this.newTreasure();
+                        }
                         this.cells[this.nowY][this.nowX] = new Cell('snake', this.snakeLength());
                         return [2 /*return*/];
                     case 'right':
@@ -104,6 +110,9 @@ var Game = /** @class */ (function () {
                             return [2 /*return*/];
                         }
                         this.nowX += 1;
+                        if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
+                            this.newTreasure();
+                        }
                         this.cells[this.nowY][this.nowX] = new Cell('snake', this.snakeLength());
                         break;
                     default:
@@ -142,6 +151,9 @@ var Game = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         if (!true) return [3 /*break*/, 6];
+                        if (this.status === 'stop') {
+                            return [3 /*break*/, 6];
+                        }
                         return [4 /*yield*/, this.sleep(100)];
                     case 2:
                         _a.sent();

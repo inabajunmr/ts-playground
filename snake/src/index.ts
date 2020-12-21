@@ -41,10 +41,6 @@ class Game {
     }
 
     async locate() {
-        if (this.status === 'stop') {
-            return;
-        }
-
         switch (this.key) {
             case 'up':
                 if (this.nowY === 0) {
@@ -52,6 +48,9 @@ class Game {
                     return;
                 }
                 this.nowY -= 1;
+                if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
+                    this.newTreasure();
+                }
                 this.cells[this.nowY][this.nowX] = new Cell(
                     'snake',
                     this.snakeLength()
@@ -63,6 +62,9 @@ class Game {
                     return;
                 }
                 this.nowY += 1;
+                if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
+                    this.newTreasure();
+                }
                 this.cells[this.nowY][this.nowX] = new Cell(
                     'snake',
                     this.snakeLength()
@@ -74,6 +76,9 @@ class Game {
                     return;
                 }
                 this.nowX -= 1;
+                if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
+                    this.newTreasure();
+                }
                 this.cells[this.nowY][this.nowX] = new Cell(
                     'snake',
                     this.snakeLength()
@@ -85,6 +90,9 @@ class Game {
                     return;
                 }
                 this.nowX += 1;
+                if (this.cells[this.nowY][this.nowX].getType() === 'treasure') {
+                    this.newTreasure();
+                }
                 this.cells[this.nowY][this.nowX] = new Cell(
                     'snake',
                     this.snakeLength()
@@ -111,6 +119,10 @@ class Game {
     async start() {
         this.newTreasure();
         while (true) {
+            if (this.status === 'stop') {
+                break;
+            }
+
             await this.sleep(100);
             await this.elapse();
             await this.locate();
