@@ -48,14 +48,24 @@ var Game = /** @class */ (function () {
         for (var index = 0; index < this.cells.length; index++) {
             this.cells[index] = new Array(cellNumY).fill(Cell.OFF);
         }
-        this.cells[this.nowY][this.nowX] = new Cell('on', 1);
+        this.cells[this.nowY][this.nowX] = new Cell('snake', 1);
         this.key = 'up';
     }
     Game.prototype.snakeLength = function () {
-        if (this.score == 0) {
+        if (this.score === 0) {
             return 1;
         }
         return this.score + 1 * Game.SNAKE_LENGTH_COEFFICIENT;
+    };
+    Game.prototype.newTreasure = function () {
+        while (true) {
+            var x = Math.floor(Math.random() * Math.floor(this.maxX));
+            var y = Math.floor(Math.random() * Math.floor(this.maxY));
+            if (this.cells[x][y].getType() === 'none') {
+                this.cells[x][y] = Cell.TREASURE;
+                break;
+            }
+        }
     };
     Game.prototype.locate = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -70,7 +80,7 @@ var Game = /** @class */ (function () {
                             return [2 /*return*/];
                         }
                         this.nowY -= 1;
-                        this.cells[this.nowY][this.nowX] = new Cell('on', this.snakeLength());
+                        this.cells[this.nowY][this.nowX] = new Cell('snake', this.snakeLength());
                         return [2 /*return*/];
                     case 'down':
                         if (this.nowY === this.maxY) {
@@ -78,7 +88,7 @@ var Game = /** @class */ (function () {
                             return [2 /*return*/];
                         }
                         this.nowY += 1;
-                        this.cells[this.nowY][this.nowX] = new Cell('on', this.snakeLength());
+                        this.cells[this.nowY][this.nowX] = new Cell('snake', this.snakeLength());
                         return [2 /*return*/];
                     case 'left':
                         if (this.nowX === 0) {
@@ -86,7 +96,7 @@ var Game = /** @class */ (function () {
                             return [2 /*return*/];
                         }
                         this.nowX -= 1;
-                        this.cells[this.nowY][this.nowX] = new Cell('on', this.snakeLength());
+                        this.cells[this.nowY][this.nowX] = new Cell('snake', this.snakeLength());
                         return [2 /*return*/];
                     case 'right':
                         if (this.nowX === this.maxX) {
@@ -94,7 +104,7 @@ var Game = /** @class */ (function () {
                             return [2 /*return*/];
                         }
                         this.nowX += 1;
-                        this.cells[this.nowY][this.nowX] = new Cell('on', this.snakeLength());
+                        this.cells[this.nowY][this.nowX] = new Cell('snake', this.snakeLength());
                         break;
                     default:
                         break;
@@ -128,21 +138,24 @@ var Game = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!true) return [3 /*break*/, 5];
-                        return [4 /*yield*/, this.sleep(100)];
+                        this.newTreasure();
+                        _a.label = 1;
                     case 1:
-                        _a.sent();
-                        return [4 /*yield*/, this.elapse()];
+                        if (!true) return [3 /*break*/, 6];
+                        return [4 /*yield*/, this.sleep(100)];
                     case 2:
                         _a.sent();
-                        return [4 /*yield*/, this.locate()];
+                        return [4 /*yield*/, this.elapse()];
                     case 3:
                         _a.sent();
-                        return [4 /*yield*/, this.print()];
+                        return [4 /*yield*/, this.locate()];
                     case 4:
                         _a.sent();
-                        return [3 /*break*/, 0];
-                    case 5: return [2 /*return*/];
+                        return [4 /*yield*/, this.print()];
+                    case 5:
+                        _a.sent();
+                        return [3 /*break*/, 1];
+                    case 6: return [2 /*return*/];
                 }
             });
         });
@@ -195,11 +208,11 @@ var Cell = /** @class */ (function () {
         this.life = life;
     }
     Cell.prototype.elapse = function () {
-        if (this.type == 'on') {
+        if (this.type === 'snake') {
             this.life -= 1;
         }
-        if (this.life == 0) {
-            this.type = 'off';
+        if (this.type === 'snake' && this.life === 0) {
+            this.type = 'none';
         }
     };
     Cell.prototype.getType = function () {
@@ -207,15 +220,18 @@ var Cell = /** @class */ (function () {
     };
     Cell.prototype.toString = function () {
         switch (this.type) {
-            case 'on':
+            case 'snake':
                 return '■';
-            case 'off':
+            case 'treasure':
+                return '★';
+            case 'none':
                 return '□';
             default:
                 return '□';
         }
     };
-    Cell.OFF = new Cell('off', 0);
+    Cell.OFF = new Cell('none', -1);
+    Cell.TREASURE = new Cell('treasure', -1);
     return Cell;
 }());
 var g = new Game(25, 25);

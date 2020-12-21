@@ -23,10 +23,21 @@ class Game {
     }
 
     snakeLength(): number {
-        if (this.score == 0) {
+        if (this.score === 0) {
             return 1;
         }
         return this.score + 1 * Game.SNAKE_LENGTH_COEFFICIENT;
+    }
+
+    newTreasure() {
+        while (true) {
+            const x = Math.floor(Math.random() * Math.floor(this.maxX));
+            const y = Math.floor(Math.random() * Math.floor(this.maxY));
+            if (this.cells[x][y].getType() === 'none') {
+                this.cells[x][y] = Cell.TREASURE;
+                break;
+            }
+        }
     }
 
     async locate() {
@@ -98,6 +109,7 @@ class Game {
     }
 
     async start() {
+        this.newTreasure();
         while (true) {
             await this.sleep(100);
             await this.elapse();
@@ -146,22 +158,24 @@ class Game {
 
 type Direction = 'up' | 'down' | 'left' | 'right';
 
-type CellType = 'snake' | 'none';
+type CellType = 'snake' | 'treasure' | 'none';
 
 class Cell {
+    static OFF: Cell = new Cell('none', -1);
+    static TREASURE: Cell = new Cell('treasure', -1);
+
     private type: CellType;
     private life: number;
-    static OFF: Cell = new Cell('none', 0);
     constructor(type: CellType, life: number) {
         this.type = type;
         this.life = life;
     }
 
     elapse() {
-        if (this.type == 'snake') {
+        if (this.type === 'snake') {
             this.life -= 1;
         }
-        if (this.life == 0) {
+        if (this.type === 'snake' && this.life === 0) {
             this.type = 'none';
         }
     }
@@ -174,6 +188,8 @@ class Cell {
         switch (this.type) {
             case 'snake':
                 return '■';
+            case 'treasure':
+                return '★';
             case 'none':
                 return '□';
             default:
