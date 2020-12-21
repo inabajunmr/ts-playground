@@ -157,31 +157,30 @@ var Game = /** @class */ (function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!true) return [3 /*break*/, 5];
+                        this.status = 'start';
+                        _a.label = 1;
+                    case 1:
+                        if (!true) return [3 /*break*/, 6];
                         if (this.status === 'gameover') {
-                            return [3 /*break*/, 5];
+                            return [3 /*break*/, 6];
                         }
                         return [4 /*yield*/, this.sleep(70)];
-                    case 1:
-                        _a.sent();
-                        return [4 /*yield*/, this.elapse()];
                     case 2:
                         _a.sent();
-                        return [4 /*yield*/, this.locate()];
+                        return [4 /*yield*/, this.elapse()];
                     case 3:
                         _a.sent();
-                        return [4 /*yield*/, this.print()];
+                        return [4 /*yield*/, this.locate()];
                     case 4:
                         _a.sent();
-                        return [3 /*break*/, 0];
-                    case 5: return [2 /*return*/];
+                        return [4 /*yield*/, this.print()];
+                    case 5:
+                        _a.sent();
+                        return [3 /*break*/, 1];
+                    case 6: return [2 /*return*/];
                 }
             });
         });
-    };
-    Game.prototype.startStatus = function () {
-        // TODO if status change at start(), compile failed
-        this.status = 'start';
     };
     Game.prototype.print = function () {
         return __awaiter(this, void 0, void 0, function () {
@@ -265,7 +264,6 @@ var Cell = /** @class */ (function () {
     g.print();
     document.addEventListener('keydown', function (e) {
         if (g.getStatus() == 'init') {
-            g.startStatus();
             g.start();
         }
         g.setDirection(e.key);

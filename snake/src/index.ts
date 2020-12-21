@@ -129,8 +129,10 @@ class Game {
     }
 
     async start() {
+        this.status = 'start';
+
         while (true) {
-            if (this.status === 'gameover') {
+            if ((this.status as GameStatus) === 'gameover') {
                 break;
             }
 
@@ -139,11 +141,6 @@ class Game {
             await this.locate();
             await this.print();
         }
-    }
-
-    startStatus() {
-        // TODO if status change at start(), compile failed
-        this.status = 'start';
     }
 
     async print() {
@@ -234,7 +231,6 @@ document.getElementById('start')?.addEventListener('click', (e) => {
     g.print();
     document.addEventListener('keydown', (e) => {
         if (g.getStatus() == 'init') {
-            g.startStatus();
             g.start();
         }
         g.setDirection(e.key);
